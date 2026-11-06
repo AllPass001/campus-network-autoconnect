@@ -5,3 +5,4 @@
 *.ico binary
 *.exe binary
 *.zip binary
+*.cmd -text whitespace=cr-at-eol

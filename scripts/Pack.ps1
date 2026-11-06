@@ -14,10 +14,9 @@ Copy-Item -LiteralPath $app -Destination (Join-Path $stage 'dist\校园网自动
 Copy-Item -LiteralPath $dialer -Destination (Join-Path $stage 'dist\CampusDialer.exe')
 Copy-Item -LiteralPath (Join-Path $root 'install.ps1') -Destination (Join-Path $stage 'install.ps1')
 Copy-Item -LiteralPath (Join-Path $root 'src\Startup.vbs') -Destination (Join-Path $stage 'src\Startup.vbs')
-$cmd = '@echo off' + [Environment]::NewLine + 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0install.ps1" -UsePrebuilt' + [Environment]::NewLine + 'pause' + [Environment]::NewLine
-[IO.File]::WriteAllText((Join-Path $stage 'install.cmd'),$cmd,[Text.Encoding]::ASCII)
+Copy-Item -LiteralPath (Join-Path $root 'install.cmd') -Destination (Join-Path $stage 'install.cmd')
 $readme = @'
-校园网自动连接 0.1.2
+校园网自动连接 0.1.3
 
 安装：
 1. 将压缩包完整解压到一个文件夹。
@@ -35,9 +34,10 @@ $readme = @'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $zipTemp = Join-Path $build ('package-' + [Guid]::NewGuid().ToString('N') + '.zip')
 [IO.Compression.ZipFile]::CreateFromDirectory($stage,$zipTemp,[IO.Compression.CompressionLevel]::Optimal,$false)
-$zip = Join-Path $dist 'CampusNetwork-v0.1.2-Windows.zip'
+$zip = Join-Path $dist 'CampusNetwork-v0.1.3-Windows.zip'
 Move-Item -LiteralPath $zipTemp -Destination $zip -Force
-$archives = @(Get-ChildItem -LiteralPath $dist -Filter 'CampusNetwork-v*.zip' -File | Sort-Object Name | ForEach-Object { $_.FullName })
-$hashes = foreach($item in (@($app,$dialer) + $archives)) { (Get-FileHash -LiteralPath $item -Algorithm SHA256).Hash.ToLowerInvariant() + '  ' + [IO.Path]::GetFileName($item) }
+$oldArchives = @(Get-ChildItem -LiteralPath $dist -Filter 'CampusNetwork-v*.zip' -File | Where-Object { $_.Name -ne [IO.Path]::GetFileName($zip) })
+if ($oldArchives.Count -gt 0) { throw 'dist 中还有旧版本压缩包；请先确认历史链接可用，并从当前分支移除旧包。' }
+$hashes = foreach($item in @($app,$dialer,$zip)) { (Get-FileHash -LiteralPath $item -Algorithm SHA256).Hash.ToLowerInvariant() + '  ' + [IO.Path]::GetFileName($item) }
 [IO.File]::WriteAllLines((Join-Path $dist 'SHA256SUMS.txt'),$hashes,[Text.Encoding]::UTF8)
 Write-Output 'Windows 程序包已生成。'

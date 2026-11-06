@@ -20,7 +20,9 @@ Windows 用户登录后自动连接已有的宽带拨号（RAS/PPPoE）连接。
 
 ## 下载现成程序包（推荐）
 
-下载 [CampusNetwork-v0.1.2-Windows.zip](dist/CampusNetwork-v0.1.2-Windows.zip)，**完整解压**后双击 `install.cmd`。安装完成后，从桌面的“校园网自动连接”快捷方式打开。
+推荐直接下载 [最新 Windows 安装包 0.1.3](dist/CampusNetwork-v0.1.3-Windows.zip)，**完整解压**后双击解压目录里的 `install.cmd`。安装完成后，从桌面的“校园网自动连接”快捷方式打开。
+
+如果选择 GitHub 的 **Code → Download ZIP**，下载的是完整源码项目（其中只包含最新版本程序包）。请完整解压，然后双击项目根目录中的 `install.cmd`；也可以从 `dist` 文件夹单独解压最新安装包。
 
 仓库中也单独提供了 [校园网自动连接.exe](dist/校园网自动连接.exe)，方便查看或在已有安装的电脑上运行。首次在另一台电脑使用时，请使用完整程序包：仅复制这个 EXE 不会安装拨号组件或开机启动脚本。程序包中不包含任何个人拨号配置或密码。
 
@@ -40,10 +42,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 
 ## 历史版本
 
-- [0.1.1 Windows 完整安装包](dist/CampusNetwork-v0.1.1-Windows.zip)：上一版，未包含卸载按钮。
-- [0.1.0 源码包](dist/CampusNetwork-v0.1.0-source.zip)：初始版本，需从源码构建。
+- [0.1.2 Windows 完整安装包](https://github.com/AllPass001/campus-network-autoconnect/blob/24c9c414dc445e1aa897340956ef69b26915d76b/dist/CampusNetwork-v0.1.2-Windows.zip)：包含卸载按钮的上一版。
+- [0.1.1 Windows 完整安装包](https://github.com/AllPass001/campus-network-autoconnect/blob/24c9c414dc445e1aa897340956ef69b26915d76b/dist/CampusNetwork-v0.1.1-Windows.zip)：未包含卸载按钮。
+- [0.1.0 源码包](https://github.com/AllPass001/campus-network-autoconnect/blob/24c9c414dc445e1aa897340956ef69b26915d76b/dist/CampusNetwork-v0.1.0-source.zip)：初始版本，需从源码构建。
 
-历史版本会保留用于回溯；新安装建议使用当前版本。每个版本的具体改动见 [更新日志](CHANGELOG.md)。
+历史版本保存在 Git 历史中，点击对应链接后可单独下载；新安装建议使用当前版本。每个版本的具体改动见 [更新日志](CHANGELOG.md)。
 
 ## 卸载
 
@@ -67,6 +70,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -PrepareOn
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\Test.ps1
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\Test-Install.ps1
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\Test-Uninstall.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\Test-Launcher.ps1
 ```
 
 测试通过模拟拨号程序验证设置、重试和提示逻辑，不连接或断开真实网络。每次实际发布前仍应在目标电脑上验证登录后的完整拨号流程。
