@@ -13,12 +13,20 @@ Windows 用户登录后自动连接已有的宽带拨号（RAS/PPPoE）连接。
 ## 要求
 
 - Windows 10 或 Windows 11，已创建可通过 Windows 拨号的连接。
-- Windows 自带的 .NET Framework 4.x 及其 C# 编译器，和 Windows Script Host。
+- Windows 自带的 .NET Framework 4.x 和 Windows Script Host；从源码构建时还需要其 C# 编译器。
 - 成功的自动拨号通常需要先在 Windows 中保存对应连接的凭据。
 
 此工具处理的是 Windows RAS 拨号，不包含网页认证；第三方校园网客户端或 Wi-Fi 登录网页可能不适用。
 
-## 安装或升级
+## 下载现成程序包（推荐）
+
+下载 [CampusNetwork-v0.1.1-Windows.zip](dist/CampusNetwork-v0.1.1-Windows.zip)，**完整解压**后双击 `install.cmd`。安装完成后，从桌面的“校园网自动连接”快捷方式打开。
+
+仓库中也单独提供了 [校园网自动连接.exe](dist/校园网自动连接.exe)，方便查看或在已有安装的电脑上运行。首次在另一台电脑使用时，请使用完整程序包：仅复制这个 EXE 不会安装拨号组件或开机启动脚本。程序包中不包含任何个人拨号配置或密码。
+
+安装会保留本工具已有的连接、等待时间和开关状态；首次安装默认关闭自动拨号，请在窗口中选择连接、保存后手动开启。
+
+## 从源码安装或升级
 
 下载或克隆本仓库，在仓库目录打开 PowerShell，运行：
 
@@ -53,4 +61,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\Test-Install.ps1
 
 ## 隐私与版本
 
-拨号配置、日志、生成的程序和 Windows 电话簿不应提交到 Git。项目变更记录见 [CHANGELOG.md](CHANGELOG.md)；后续版本使用 Git 提交和标签保留历史。
+个人拨号配置、日志和 Windows 电话簿不应提交到 Git；dist 中仅包含从项目源码构建的程序包。项目变更记录见 [CHANGELOG.md](CHANGELOG.md)；后续版本使用 Git 提交和标签保留历史。

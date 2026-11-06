@@ -1,4 +1,5 @@
-﻿$ErrorActionPreference = 'Stop'
+﻿param([switch]$UsePrebuilt)
+$ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $testRoot = Join-Path (Join-Path $root 'build\tests') ('install-' + [Guid]::NewGuid().ToString('N'))
 $docs = Join-Path $testRoot 'Documents'
@@ -17,7 +18,7 @@ $env:CAMPUS_TEST_DOCUMENTS=$docs
 $env:CAMPUS_TEST_STARTUP=$startup
 $env:CAMPUS_TEST_DESKTOP=$desktop
 try {
- & $fixtureScript
+ & $fixtureScript -UsePrebuilt:$UsePrebuilt
  $install=Join-Path $docs 'Codex\CampusNetworkSwitch'
  $on=Join-Path $startup 'Campus Network Auto Connect.vbs'
  $off=$on+'.disabled'
@@ -28,12 +29,12 @@ try {
  Move-Item -LiteralPath $off -Destination $on
  [IO.File]::WriteAllText((Join-Path $install 'delay.txt'),'8',[Text.Encoding]::ASCII)
  [IO.File]::WriteAllText((Join-Path $install 'retry.txt'),'4,7',[Text.Encoding]::ASCII)
- & $fixtureScript
+ & $fixtureScript -UsePrebuilt:$UsePrebuilt
  if(-not(Test-Path -LiteralPath $on) -or (Test-Path -LiteralPath $off)){throw '升级后启用状态没有保留。'}
  if([IO.File]::ReadAllText((Join-Path $install 'delay.txt')) -ne '8' -or [IO.File]::ReadAllText((Join-Path $install 'retry.txt')) -ne '4,7'){throw '升级后用户设置发生变化。'}
  [IO.File]::WriteAllText($on,'unrelated user script',[Text.Encoding]::ASCII)
  $blocked=$false
- try { & $fixtureScript } catch { $blocked=$true }
+ try { & $fixtureScript -UsePrebuilt:$UsePrebuilt } catch { $blocked=$true }
  if(-not $blocked -or [IO.File]::ReadAllText($on) -ne 'unrelated user script'){throw '未能保护已有的非本工具启动文件。'}
  Write-Output '首次安装、升级保留设置及同名文件保护均通过。'
 } finally {

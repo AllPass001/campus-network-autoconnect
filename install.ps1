@@ -1,21 +1,30 @@
 ﻿[CmdletBinding()]
-param([switch]$PrepareOnly)
+param([switch]$PrepareOnly, [switch]$UsePrebuilt)
 $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
 $build = Join-Path $root 'build'
 $src = Join-Path $root 'src'
 $icon = Join-Path $root 'assets\app.ico'
 $assembly = Join-Path $src 'AssemblyInfo.cs'
-$csc = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
-if (-not (Test-Path -LiteralPath $csc)) { $csc = Join-Path $env:WINDIR 'Microsoft.NET\Framework\v4.0.30319\csc.exe' }
-if (-not (Test-Path -LiteralPath $csc)) { throw '找不到 .NET Framework C# 编译器。' }
 New-Item -ItemType Directory -Path $build -Force | Out-Null
 $appBuild = Join-Path $build 'CampusNetwork.exe'
 $dialBuild = Join-Path $build 'CampusDialer.exe'
-& $csc /nologo /target:winexe /codepage:65001 /reference:System.Windows.Forms.dll /reference:System.Drawing.dll "/win32icon:$icon" "/out:$appBuild" (Join-Path $src 'Dashboard.cs') $assembly
-if ($LASTEXITCODE -ne 0) { throw '管理窗口编译失败。' }
-& $csc /nologo /target:exe /codepage:65001 "/out:$dialBuild" (Join-Path $src 'Dialer.cs') $assembly
-if ($LASTEXITCODE -ne 0) { throw '拨号程序编译失败。' }
+if ($UsePrebuilt) {
+  $dist = Join-Path $root 'dist'
+  $prebuiltApp = Join-Path $dist '校园网自动连接.exe'
+  $prebuiltDialer = Join-Path $dist 'CampusDialer.exe'
+  if (-not (Test-Path -LiteralPath $prebuiltApp) -or -not (Test-Path -LiteralPath $prebuiltDialer)) { throw '找不到程序包中的可执行文件，请重新完整解压程序包。' }
+  Copy-Item -LiteralPath $prebuiltApp -Destination $appBuild -Force
+  Copy-Item -LiteralPath $prebuiltDialer -Destination $dialBuild -Force
+} else {
+  $csc = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
+  if (-not (Test-Path -LiteralPath $csc)) { $csc = Join-Path $env:WINDIR 'Microsoft.NET\Framework\v4.0.30319\csc.exe' }
+  if (-not (Test-Path -LiteralPath $csc)) { throw '找不到 .NET Framework C# 编译器。' }
+  & $csc /nologo /target:winexe /codepage:65001 /reference:System.Windows.Forms.dll /reference:System.Drawing.dll "/win32icon:$icon" "/out:$appBuild" (Join-Path $src 'Dashboard.cs') $assembly
+  if ($LASTEXITCODE -ne 0) { throw '管理窗口编译失败。' }
+  & $csc /nologo /target:exe /codepage:65001 "/out:$dialBuild" (Join-Path $src 'Dialer.cs') $assembly
+  if ($LASTEXITCODE -ne 0) { throw '拨号程序编译失败。' }
+}
 $launcherText = [IO.File]::ReadAllText((Join-Path $src 'Startup.vbs'), [Text.Encoding]::UTF8)
 $buildLauncher = Join-Path $build 'Campus Network Auto Connect.vbs'
 [IO.File]::WriteAllText($buildLauncher, $launcherText, [Text.Encoding]::Unicode)
