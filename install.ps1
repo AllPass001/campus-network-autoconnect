@@ -20,7 +20,9 @@ if ($UsePrebuilt) {
   $csc = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
   if (-not (Test-Path -LiteralPath $csc)) { $csc = Join-Path $env:WINDIR 'Microsoft.NET\Framework\v4.0.30319\csc.exe' }
   if (-not (Test-Path -LiteralPath $csc)) { throw '找不到 .NET Framework C# 编译器。' }
-  & $csc /nologo /target:winexe /codepage:65001 /reference:System.Windows.Forms.dll /reference:System.Drawing.dll "/win32icon:$icon" "/out:$appBuild" (Join-Path $src 'Dashboard.cs') $assembly
+  $uninstallSource = Join-Path $src 'Uninstall.vbs'
+  if (-not (Test-Path -LiteralPath $uninstallSource)) { throw '找不到卸载组件源码。' }
+  & $csc /nologo /target:winexe /codepage:65001 /reference:System.Windows.Forms.dll /reference:System.Drawing.dll "/win32icon:$icon" "/resource:$uninstallSource,CampusNetwork.Uninstall.vbs" "/out:$appBuild" (Join-Path $src 'Dashboard.cs') $assembly
   if ($LASTEXITCODE -ne 0) { throw '管理窗口编译失败。' }
   & $csc /nologo /target:exe /codepage:65001 "/out:$dialBuild" (Join-Path $src 'Dialer.cs') $assembly
   if ($LASTEXITCODE -ne 0) { throw '拨号程序编译失败。' }

@@ -26,6 +26,15 @@ try {
  if(-not(Test-Path -LiteralPath $off) -or (Test-Path -LiteralPath $on) -or -not(Test-Path -LiteralPath $link)){throw '首次安装验证失败。'}
  $shell=New-Object -ComObject WScript.Shell
  if($shell.CreateShortcut($link).TargetPath -ne (Join-Path $install 'CampusNetwork.exe')){throw '桌面快捷方式验证失败。'}
+ $appBytes=[IO.File]::ReadAllBytes((Join-Path $install 'CampusNetwork.exe'))
+ $appAssembly=[Reflection.Assembly]::Load($appBytes)
+ $resource=$appAssembly.GetManifestResourceStream('CampusNetwork.Uninstall.vbs')
+ if($null -eq $resource){throw '安装程序中缺少卸载组件。'}
+ try { $reader=New-Object IO.StreamReader($resource,[Text.Encoding]::UTF8); try { $embedded=$reader.ReadToEnd() } finally {$reader.Dispose()} } finally {$resource.Dispose()}
+ $expectedPath=Join-Path $root 'src\Uninstall.vbs'
+ if(Test-Path -LiteralPath $expectedPath){$expected=[IO.File]::ReadAllText($expectedPath,[Text.Encoding]::UTF8);if($embedded.Replace([string][char]13,'') -ne $expected.Replace([string][char]13,'')){throw '卸载组件内容不匹配。'}}
+ elseif(-not $embedded.Contains('Sub RemoveManagedStartup')){throw '卸载组件内容无效。'}
+
  Move-Item -LiteralPath $off -Destination $on
  [IO.File]::WriteAllText((Join-Path $install 'delay.txt'),'8',[Text.Encoding]::ASCII)
  [IO.File]::WriteAllText((Join-Path $install 'retry.txt'),'4,7',[Text.Encoding]::ASCII)

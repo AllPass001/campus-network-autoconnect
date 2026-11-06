@@ -91,7 +91,9 @@ namespace CampusToggle {
       FormBorderStyle=FormBorderStyle.FixedDialog; MaximizeBox=false; BackColor=Color.FromArgb(245,248,250);
       Font=new Font("Microsoft YaHei UI",9f); AutoScaleMode=AutoScaleMode.Font;
       try { Icon=Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
-      LabelAt(this,"校园网自动连接",34,22,450,41,20f,FontStyle.Bold,dark);
+      LabelAt(this,"校园网自动连接",34,22,365,41,20f,FontStyle.Bold,dark);
+      Button uninstall=ButtonAt(this,"卸载",430,27,111,36,Color.FromArgb(252,236,233),red);
+      uninstall.Click+=delegate { RequestUninstall(); };
       LabelAt(this,"开机拨号与连接设置",36,66,440,26,10f,FontStyle.Regular,muted);
       card=new Panel { Location=new Point(34,108),Size=new Size(507,177),BackColor=Color.White };
       card.Paint+=delegate(object sender,PaintEventArgs e) { using(Pen pen=new Pen(Color.FromArgb(229,235,239))) e.Graphics.DrawRectangle(pen,0,0,card.Width-1,card.Height-1); };
@@ -139,6 +141,27 @@ namespace CampusToggle {
     Button ButtonAt(Control parent,string text,int x,int y,int w,int h,Color background,Color foreground) {
       Button button=new Button { Text=text,Location=new Point(x,y),Size=new Size(w,h),BackColor=background,ForeColor=foreground,FlatStyle=FlatStyle.Flat,Cursor=Cursors.Hand,Font=new Font("Microsoft YaHei UI",9.5f,FontStyle.Bold),UseVisualStyleBackColor=false };
       button.FlatAppearance.BorderSize=0; parent.Controls.Add(button); return button;
+    }
+    void RequestUninstall() {
+      string message="卸载会关闭本工具的开机自动拨号，并移除程序、启动项、快捷方式和本工具保存的设置。\n\nWindows 的拨号连接与密码不会删除；手动下载或复制的安装包会保留。\n\n确定要卸载吗？";
+      if(MessageBox.Show(message,"卸载校园网自动连接",MessageBoxButtons.YesNo,MessageBoxIcon.Warning,MessageBoxDefaultButton.Button2)!=DialogResult.Yes) return;
+      string temporary=null;
+      try {
+        string script;
+        using(Stream resource=System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("CampusNetwork.Uninstall.vbs")) {
+          if(resource==null) throw new InvalidOperationException("找不到卸载组件，请重新下载安装包。");
+          using(StreamReader reader=new StreamReader(resource,Encoding.UTF8,true)) script=reader.ReadToEnd();
+        }
+        temporary=Path.Combine(Path.GetTempPath(),"CampusNetworkUninstall-"+Guid.NewGuid().ToString("N")+".vbs");
+        File.WriteAllText(temporary,script,Encoding.Unicode);
+        ProcessStartInfo start=new ProcessStartInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),"wscript.exe"),"\""+temporary+"\"");
+        start.UseShellExecute=false; start.CreateNoWindow=true;
+        if(Process.Start(start)==null) throw new InvalidOperationException("无法启动卸载组件。");
+        Close();
+      } catch(Exception ex) {
+        if(temporary!=null) { try { if(File.Exists(temporary)) File.Delete(temporary); } catch { } }
+        MessageBox.Show("无法开始卸载：\n"+ex.Message,Text,MessageBoxButtons.OK,MessageBoxIcon.Warning);
+      }
     }
     void LoadData() {
       reloading=true; saved=null; listAvailable=false; available=new List<Entry>(); networks.Items.Clear();
