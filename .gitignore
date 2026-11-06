@@ -1,0 +1,9 @@
+/build/
+*.user
+*.suo
+*.log
+connection.txt
+delay.txt
+retry.txt
+last_dial.log
+*.pbk
